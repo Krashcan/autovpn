@@ -9,6 +9,7 @@ import (
     "os/exec"
     "os/signal"
     "strings"
+    "runtime"
     "syscall"
 )
 
@@ -53,7 +54,14 @@ func main() {
         }
 
         fmt.Printf("[autovpn] writing config file\n")
-        f, err := os.Create("/tmp/openvpnconf")
+        var f *os.File
+
+        if runtime.GOOS == "windows"{
+            os.Mkdir("tmp",0777)
+            f,err = os.Create("tmp/openvpnconf.ovpn")
+        }else{
+            f, err = os.Create("/tmp/openvpnconf")    
+        }
         check(err)
 
         _, err = f.Write(conf)
@@ -62,8 +70,12 @@ func main() {
         f.Close()
 
         fmt.Printf("[autovpn] running openvpn\n")
-
-        cmd := exec.Command("sudo", "openvpn", "/tmp/openvpnconf")
+        var cmd *exec.Cmd
+        if runtime.GOOS == "windows"{
+            cmd = exec.Command("openvpn","tmp/openvpnconf.ovpn")
+        }else{
+            cmd = exec.Command("sudo", "openvpn", "/tmp/openvpnconf")    
+        }
         cmd.Stdout = os.Stdout
 
         c := make(chan os.Signal, 2)
