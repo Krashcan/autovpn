@@ -57,8 +57,7 @@ func main() {
         var f *os.File
 
         if runtime.GOOS == "windows"{
-            os.Mkdir("tmp",0777)
-            f,err = os.Create("tmp/openvpnconf.ovpn")
+            f,err = os.Create(os.Getenv("TEMP")+"/openvpnconf.ovpn")
         }else{
             f, err = os.Create("/tmp/openvpnconf")    
         }
@@ -72,7 +71,7 @@ func main() {
         fmt.Printf("[autovpn] running openvpn\n")
         var cmd *exec.Cmd
         if runtime.GOOS == "windows"{
-            cmd = exec.Command("openvpn","tmp/openvpnconf.ovpn")
+            cmd = exec.Command("openvpn",os.Getenv("TEMP")+"/openvpnconf.ovpn")
         }else{
             cmd = exec.Command("sudo", "openvpn", "/tmp/openvpnconf")    
         }
